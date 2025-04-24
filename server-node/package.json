@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "lint:ts": "tsc --noEmit -p ./tsconfig.json",
     "lint": "npm run lint:fix && npm run lint:ts",
+    "migrate:dev": "docker exec -it api-tablu-tasks npx prisma migrate dev --schema=./prisma/schema.prisma",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -20,11 +21,14 @@
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
+    "dotenv-cli": "^8.0.0",
     "eslint": "8",
     "eslint-config-prettier": "^10.1.2",
+    "prisma": "^6.6.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@prisma/client": "^6.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
