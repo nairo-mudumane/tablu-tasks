@@ -13,8 +13,6 @@ const allowedOrigins =
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
-app.all("/ping", (_req, res) => res.status(200).json({ ok: true }));
-
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT} - ${process.env.NODE_ENV}`);
+  console.log(`server running on ${ENV.PORT}`);
 });
