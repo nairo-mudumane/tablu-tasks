@@ -26,11 +26,13 @@ export const createTask = async (req: Request, res: Response) => {
 
 export const getTasks = async (req: Request, res: Response) => {
   try {
-    const status = req.query.status as EnumTaskStatus;
+    const status = (
+      req.query.status as string
+    )?.toUpperCase() as EnumTaskStatus;
     const sortBy = req.query.sortBy as CreatedAtFilter;
 
     const tasks = await prisma.task.findMany({
-      where: { status },
+      where: status ? { status } : undefined,
       orderBy:
         sortBy === 'created_at' ? { created_at: 'desc' } : { due_date: 'desc' },
     });
