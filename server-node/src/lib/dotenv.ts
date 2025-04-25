@@ -17,6 +17,7 @@ const schema = z.object({
   RABBITMQ_PORT: z.union([z.string(), z.number()]),
   RABBITMQ_USER: z.string(),
   RABBITMQ_PASSWORD: z.string(),
+  RABBITMQ_QUEUE: z.string(),
 });
 
 export const ENV = schema.parse(process.env);
