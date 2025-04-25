@@ -28,5 +28,5 @@
     "no-console": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "off"
   },
-  "ignorePatterns": ["dist", "node_modules"]
+  "ignorePatterns": ["dist", "node_modules", "src/generated"]
 }
