@@ -1,42 +1,65 @@
-version: "3.8"
-
 services:
   app:
+    container_name: api-tablu-tasks-app
     build:
       context: .
-      dockerfile: Dockerfile
-    image: api-tablu-tasks
-    container_name: api-tablu-tasks
-    ports:
-      - "${NODE_PORT}:${NODE_PORT}"
+      target: ${NODE_ENV}
+    env_file:
+      - ./.env
     environment:
       NODE_ENV: ${NODE_ENV}
-      PORT: ${NODE_PORT}
-      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+      LOG_LEVEL: ${LOG_LEVEL}
+      PORT: ${PORT}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
-      - db
+      mysql:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     networks:
-      - api-tablu-tasks-network
-
-  db:
-    image: mysql:8.0
-    container_name: mysql8
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-    ports:
-      - "${DB_PORT}:3306"
+      - api-tablu-tasks
     volumes:
-      - db_data:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - api-tablu-tasks-network
+      - .:/node/app
+      - /node/app/node_modules
 
-networks:
-  api-tablu-tasks-network:
-    driver: bridge
+  mysql:
+    image: mysql:latest
+    restart: always
+    container_name: api-tablu-tasks-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - api-tablu-tasks
+
+  rabbitmq:
+    image: rabbitmq:4.0.9-alpine
+    container_name: api-tablu-tasks-rabbitmq
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    networks:
+      - api-tablu-tasks
 
 volumes:
-  db_data:
+  mysql-data:
+
+networks:
+  api-tablu-tasks:

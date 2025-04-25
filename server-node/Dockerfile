@@ -1,26 +1,30 @@
-FROM node:22-alpine AS builder
+FROM node:20.16-alpine3.19 AS builder
+FROM builder AS dev
 
-WORKDIR /app
+WORKDIR /node
+
+COPY package*.json ./
 
 COPY package*.json ./
 
 RUN npm install
 
+WORKDIR /node/app
+
+CMD ["npm", "run", "dev"]
+
+# Production stage
+FROM builder AS prod
+
+WORKDIR /build
+
+COPY package*.json ./
+
+RUN npm lint:ts
+RUN npm install  && npm cache clean --force
+
 COPY . .
-
-RUN npx prisma generate --schema=./prisma/schema.prisma
-
-RUN npm run build
-
-FROM node:22-alpine
-
-WORKDIR /app
-
-COPY --from=builder /app ./
 
 EXPOSE 3333
 
-ENV NODE_ENV=dev
-ENV NODE_PORT=3333
-
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]

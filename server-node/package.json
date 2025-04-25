@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "tsx watch --include ./.env.dev src/index.ts",
+    "dev": "tsx watch --include ./.env src/index.ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "lint:ts": "tsc --noEmit -p ./tsconfig.json",
     "lint": "npm run lint:fix && npm run lint:ts",
