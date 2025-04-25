@@ -10,11 +10,9 @@ services:
       NODE_ENV: ${NODE_ENV}
       LOG_LEVEL: ${LOG_LEVEL}
       PORT: ${PORT}
-      MYSQL_HOST: api-tablu-tasks-db # Hardcoded container name
+      MYSQL_HOST: api-tablu-tasks-db
       DATABASE_URL: ${DATABASE_URL}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -23,7 +21,7 @@ services:
       mysql:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
     networks:
       - api-tablu-tasks
     volumes:
@@ -39,16 +37,24 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      # NO MYSQL_USER or MYSQL_PASSWORD here
     ports:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Add this back
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - api-tablu-tasks
-    healthcheck: # Add this healthcheck
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -65,9 +71,17 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     networks:
       - api-tablu-tasks
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
 
 volumes:
   mysql-data:
+  rabbitmq-data:
 
 networks:
   api-tablu-tasks:
