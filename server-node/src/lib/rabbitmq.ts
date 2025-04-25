@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
-import * as amqp from "amqplib";
+import * as amqp from 'amqplib';
 
-import { ENV } from "./dotenv";
+import { ENV } from './dotenv';
 
 type OnMessage = (message: string) => Promise<void>;
 type Connection = amqp.ChannelModel;
@@ -11,7 +11,7 @@ type Channel = amqp.Channel;
 export class RabbitMQClient {
   private async connect() {
     try {
-      console.log("connecting message broker...");
+      console.log('connecting message broker...');
       const connection = await amqp.connect({
         hostname: ENV.RABBITMQ_HOST,
         port: Number(ENV.RABBITMQ_PORT),
@@ -26,7 +26,7 @@ export class RabbitMQClient {
 
   private async createChannel(conn: Connection): Promise<Channel> {
     try {
-      console.log("creating message broker channel...");
+      console.log('creating message broker channel...');
       const channel = await conn.createChannel();
       return channel;
     } catch (error) {
