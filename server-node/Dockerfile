@@ -4,8 +4,7 @@ FROM builder AS dev
 WORKDIR /node
 
 COPY package*.json ./
-
-COPY package*.json ./
+COPY . .
 
 RUN npm install
 

@@ -10,9 +10,10 @@ services:
       NODE_ENV: ${NODE_ENV}
       LOG_LEVEL: ${LOG_LEVEL}
       PORT: ${PORT}
-      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_HOST: api-tablu-tasks-db # Hardcoded container name
+      DATABASE_URL: ${DATABASE_URL}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -20,7 +21,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       mysql:
-        condition: service_started
+        condition: service_healthy
       rabbitmq:
         condition: service_started
     networks:
@@ -28,30 +29,37 @@ services:
     volumes:
       - .:/node/app
       - /node/app/node_modules
+    ports:
+      - "3333:3333"
 
   mysql:
-    image: mysql:latest
-    restart: always
+    image: mysql:8.0
     container_name: api-tablu-tasks-db
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # NO MYSQL_USER or MYSQL_PASSWORD here
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Add this back
     networks:
       - api-tablu-tasks
+    healthcheck: # Add this healthcheck
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:4.0.9-alpine
     container_name: api-tablu-tasks-rabbitmq
     restart: always
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}

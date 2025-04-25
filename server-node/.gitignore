@@ -181,3 +181,6 @@ dist
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# ignore prisma generated files
+src/generated/prisma/*

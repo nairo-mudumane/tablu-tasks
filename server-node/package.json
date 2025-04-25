@@ -11,7 +11,9 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "lint:ts": "tsc --noEmit -p ./tsconfig.json",
     "lint": "npm run lint:fix && npm run lint:ts",
-    "migrate:dev": "docker exec -it api-tablu-tasks npx prisma migrate dev --schema=./prisma/schema.prisma",
+    "migrate:dev": "docker compose exec app npx prisma migrate dev",
+    "migrate:generate": "docker compose exec app npx prisma generate",
+    "migrate:deploy": "docker compose exec app npx prisma migrate deploy --schema=./prisma/schema.prisma",
     "build": "tsc",
     "start": "node dist/index.js"
   },

@@ -10,7 +10,6 @@ const schema = z.object({
   MYSQL_HOST: z.string(),
   MYSQL_PORT: z.union([z.string(), z.number()]),
   MYSQL_USER: z.string(),
-  MYSQL_PASSWORD: z.string(),
   MYSQL_ROOT_PASSWORD: z.string(),
   MYSQL_DATABASE: z.string(),
   DATABASE_URL: z.string().url(),
