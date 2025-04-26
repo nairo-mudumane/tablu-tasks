@@ -19,8 +19,7 @@ export const createTask = async (req: Request, res: Response) => {
     await publishTaskEvent('TASK_CREATED', JSON.stringify(task));
     res.status(201).json(task);
   } catch (error) {
-    console.error('Error creating task:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -41,8 +40,7 @@ export const getTasks = async (req: Request, res: Response) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.error('Error fetching tasks:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -64,8 +62,7 @@ export const updateTask = async (req: Request, res: Response) => {
     if (status) await publishTaskEvent('TASK_UPDATED', JSON.stringify(updated));
     res.status(200).json(updated);
   } catch (error) {
-    console.error('Error updating task:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -82,7 +79,6 @@ export const deleteTask = async (req: Request, res: Response) => {
     );
     res.status(204).send();
   } catch (error) {
-    console.error('Error deleting task:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
