@@ -24,6 +24,13 @@ export const getTasks = async (
   });
 };
 
+export const getTaskById = async (userId: number, taskId: number) => {
+  return prisma.task.findFirst({
+    where: { user: { id: userId }, id: taskId },
+    include: { user: { select: { id: true, username: true, email: true } } },
+  });
+};
+
 export const updateTask = async (
   id: number,
   data: UpdateTaskDto,
