@@ -9,6 +9,8 @@ import { AuthRoutes } from './auth';
 export function InitializeAppRouter(app: Express) {
   app.use(
     '/api',
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     swaggerUI.serve,
     swaggerUI.setup(swaggerJSDoc(swaggerConfig)),
   );
