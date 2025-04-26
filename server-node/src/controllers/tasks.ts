@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
+import { z } from 'zod';
 
 import { publishTaskEvent } from '../queues/task.queue';
 import { prisma } from '../lib/prisma';
-import { CreateTaskSchema } from '../schemas/tasks';
+import { CreateTaskSchema, UpdateTaskSchema } from '../schemas/tasks';
 import { EnumTaskStatus } from '../generated/prisma';
-import { CreatedAtFilter } from '../@types/create.dto';
 
 export const createTask = async (req: Request, res: Response) => {
   try {
@@ -25,11 +25,13 @@ export const createTask = async (req: Request, res: Response) => {
 };
 
 export const getTasks = async (req: Request, res: Response) => {
+  const taskQuerySchema = z.object({
+    status: z.nativeEnum(EnumTaskStatus).optional(),
+    sortBy: z.enum(['created_at', 'due_date']).optional(),
+  });
+
   try {
-    const status = (
-      req.query.status as string
-    )?.toUpperCase() as EnumTaskStatus;
-    const sortBy = req.query.sortBy as CreatedAtFilter;
+    const { sortBy, status } = taskQuerySchema.parse(req.query);
 
     const tasks = await prisma.task.findMany({
       where: status ? { status } : undefined,
@@ -37,7 +39,7 @@ export const getTasks = async (req: Request, res: Response) => {
         sortBy === 'created_at' ? { created_at: 'desc' } : { due_date: 'desc' },
     });
 
-    res.json(tasks);
+    res.status(200).json(tasks);
   } catch (error) {
     console.error('Error fetching tasks:', error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -46,16 +48,21 @@ export const getTasks = async (req: Request, res: Response) => {
 
 export const updateTask = async (req: Request, res: Response) => {
   try {
+    const { status, ...payload } = UpdateTaskSchema.parse(req.body);
+
     const task = await prisma.task.findFirst({
       where: { id: Number(req.params.taskId) },
     });
 
-    if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
-    }
+    if (!task) return res.status(404).json({ message: 'Task not found' });
 
-    await publishTaskEvent('TASK_UPDATED', JSON.stringify(task));
-    res.json(task);
+    const updated = await prisma.task.update({
+      data: { ...payload, id: task.id, status },
+      where: { id: task.id },
+    });
+
+    if (status) await publishTaskEvent('TASK_UPDATED', JSON.stringify(updated));
+    res.status(200).json(updated);
   } catch (error) {
     console.error('Error updating task:', error);
     res.status(500).json({ message: 'Internal Server Error' });
